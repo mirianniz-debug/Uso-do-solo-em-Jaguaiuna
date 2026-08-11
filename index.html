@@ -317,28 +317,28 @@ const LAYER_DEFS = [
   {
     id:'urbano', group:'uso', name:'Área Urbana', geomType:'polygon',
     desc:'Zona urbana consolidada (Zona Residencial)',
-    color:'#7a3b52', fillOpacity:0.45, weight:1, dashArray:null,
+    color:'#7a3b52', fillOpacity:0.6, weight:1.8, dashArray:null,
     defaultOn:true, data:DATA_URBANO,
     popup:p=>[['Sigla',p.Sigla],['Zona',p.Nome],['Área',p['Área']?Number(p['Área']).toLocaleString('pt-BR',{maximumFractionDigits:0})+' m²':'—']]
   },
   {
     id:'expansao', group:'uso', name:'Expansão Urbana', geomType:'polygon',
     desc:'Áreas de expansão urbana projetada',
-    color:'#c1622e', fillOpacity:0.4, weight:1.5, dashArray:'6,4',
+    color:'#c1622e', fillOpacity:0.58, weight:2.2, dashArray:'6,4',
     defaultOn:true, data:DATA_EXPANSAO,
     popup:p=>[['Área',p['Área']?Number(p['Área']).toLocaleString('pt-BR',{maximumFractionDigits:0})+' m²':'—']]
   },
   {
     id:'rural', group:'uso', name:'Área Rural', geomType:'polygon',
     desc:'Zona rural do município',
-    color:'#8a6d1f', fillOpacity:0.3, weight:1, dashArray:null,
+    color:'#8a6d1f', fillOpacity:0.5, weight:1.8, dashArray:null,
     defaultOn:true, data:DATA_RURAL_FILL,
     popup:p=>[['Área',p['Área']?Number(p['Área']).toLocaleString('pt-BR',{maximumFractionDigits:0})+' m²':'—']]
   },
   {
     id:'florestal_env', group:'env', name:'Inventário Florestal (2020)', geomType:'polygon',
     desc:'Cobertura vegetal por fitofisionomia',
-    color:'#4f7942', fillOpacity:0.45, weight:0.5, dashArray:null,
+    color:'#4f7942', fillOpacity:0.58, weight:1.4, dashArray:null,
     defaultOn:false, data:DATA_FLORESTAL_ENV,
     source:'Inventário Florestal do Estado de São Paulo (2020) — SIMA / Instituto Florestal, DataGeo-SP',
     popup:p=>[['Fitofisionomia',p.Fitofisionomia],['Área',p['Área_ha']?p['Área_ha'].toLocaleString('pt-BR',{maximumFractionDigits:2})+' ha':'—']]
@@ -346,21 +346,21 @@ const LAYER_DEFS = [
   {
     id:'app_env', group:'env', name:'Área de Preservação Permanente', geomType:'polygon',
     desc:'APP associada à hidrografia do município',
-    color:'#1b6e76', fillOpacity:0.4, weight:1, dashArray:null,
+    color:'#1b6e76', fillOpacity:0.55, weight:1.6, dashArray:null,
     defaultOn:false, data:DATA_APP_ENV,
     popup:p=>[['Hidrografia',p.Hidrografia],['APP (m)',p.APP_m],['Área',p['Área_ha']?p['Área_ha'].toLocaleString('pt-BR',{maximumFractionDigits:2})+' ha':'—']]
   },
   {
     id:'massas_env', group:'env', name:'Massas de água', geomType:'polygon',
     desc:'Corpos d\u2019água mapeados (lagos, represas, açudes)',
-    color:'#2f6f8f', fillOpacity:0.5, weight:1, dashArray:null,
+    color:'#2f6f8f', fillOpacity:0.6, weight:1.6, dashArray:null,
     defaultOn:false, data:DATA_MASSAS_ENV,
     popup:p=>[['Natureza',p.Natureza],['Setor',p.Setor],['Área',p['Área_ha']?p['Área_ha'].toLocaleString('pt-BR',{maximumFractionDigits:2})+' ha':'—']]
   },
   {
     id:'rios_env', group:'env', name:'Rios', geomType:'line', statType:'length',
     desc:'Cursos d\u2019água (rede hidrográfica)',
-    color:'#124c52', fillOpacity:0, weight:1.6, dashArray:null,
+    color:'#124c52', fillOpacity:0, weight:2.4, dashArray:null,
     defaultOn:false, data:DATA_RIOS_ENV,
     popup:p=>[['Tipo',p.Tipo],['Extensão',p['Extensão_km']?p['Extensão_km'].toLocaleString('pt-BR',{maximumFractionDigits:3})+' km':'—']]
   }
@@ -425,19 +425,12 @@ document.querySelectorAll('.basemap-btn').forEach(btn=>{
   const body = document.body;
   const iconMoon = document.getElementById('iconMoon');
   const iconSun = document.getElementById('iconSun');
-  function applyTheme(dark){
+  window.__geoTheme = { applyTheme: function(dark){
     body.classList.toggle('dark-mode', dark);
     iconMoon.style.display = dark ? 'none' : 'block';
     iconSun.style.display = dark ? 'block' : 'none';
     try{ localStorage.setItem('geoportal-theme', dark ? 'dark' : 'light'); }catch(e){}
-  }
-  let saved = null;
-  try{ saved = localStorage.getItem('geoportal-theme'); }catch(e){}
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  applyTheme(saved ? saved==='dark' : prefersDark);
-  document.getElementById('themeToggle').addEventListener('click', ()=>{
-    applyTheme(!body.classList.contains('dark-mode'));
-  });
+  }};
 })();
 
 /* =========================================================
@@ -515,6 +508,7 @@ function layerLengthKm(data){
 }
 
 LAYER_DEFS.forEach(def=>{
+  def.currentWeight = def.weight;
   const options = {
     style: () => ({
       color: def.color, weight: def.weight, fillColor: def.color,
@@ -524,8 +518,8 @@ LAYER_DEFS.forEach(def=>{
       const html = buildPopup(feature, def);
       if(html) lyr.bindPopup(html);
       if(!def.noHover){
-        lyr.on('mouseover',()=>lyr.setStyle({weight:def.weight+1.6}));
-        lyr.on('mouseout',()=>lyr.setStyle({weight:def.weight}));
+        lyr.on('mouseover',()=>lyr.setStyle({weight:def.currentWeight+1.6}));
+        lyr.on('mouseout',()=>lyr.setStyle({weight:def.currentWeight}));
       }
     }
   };
@@ -536,6 +530,31 @@ LAYER_DEFS.forEach(def=>{
   if(def.statType==='length') def.lengthKm = layerLengthKm(def.data);
   leafletLayers[def.id] = layer;
   if(def.defaultOn) layer.addTo(map);
+});
+
+/* Reforço de contraste no modo escuro: os tiles do mapa ficam escurecidos
+   (filtro CSS), mas o preenchimento das camadas não — sem isso, elas
+   perdem contraste contra o fundo escuro. */
+function applyLayerContrast(dark){
+  LAYER_DEFS.forEach(def=>{
+    const fillOpacity = dark ? Math.min(0.85, def.fillOpacity + 0.14) : def.fillOpacity;
+    const weight = dark ? def.weight + 0.5 : def.weight;
+    def.currentWeight = weight;
+    leafletLayers[def.id].setStyle({fillOpacity, weight});
+  });
+}
+const __baseApplyTheme = window.__geoTheme.applyTheme;
+window.__geoTheme.applyTheme = function(dark){
+  __baseApplyTheme(dark);
+  applyLayerContrast(dark);
+};
+
+let __themeSaved = null;
+try{ __themeSaved = localStorage.getItem('geoportal-theme'); }catch(e){}
+const __prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+window.__geoTheme.applyTheme(__themeSaved ? __themeSaved==='dark' : __prefersDark);
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  window.__geoTheme.applyTheme(!document.body.classList.contains('dark-mode'));
 });
 
 const MUNICIPIO_AREA_HA = (LAYER_DEFS.find(d=>d.id==='limite')||{}).areaHa || null;
