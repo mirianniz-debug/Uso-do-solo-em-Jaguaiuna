@@ -315,6 +315,14 @@ const LAYER_DEFS = [
     popup:p=>[['Distrito',p.NM_DISTRIT],['Código IBGE',p.CD_GEOCODD]]
   },
   {
+    id:'protecao_ambiental', group:'uso', name:'Área de Proteção Ambiental', geomType:'polygon',
+    desc:'Zona de proteção ambiental — tem prioridade sobre as demais zonas onde houver sobreposição',
+    color:'#2f6b46', fillOpacity:0.4, weight:1.8, dashArray:'2,3',
+    defaultOn:true, data:DATA_PROTECAO_AMBIENTAL,
+    source:'Anexo III – Divisão Territorial (Prefeitura de Jaguariúna), extraído e georreferenciado a partir do desenho oficial em AutoCAD',
+    popup:p=>[['Área',p.area_ha?Number(p.area_ha).toLocaleString('pt-BR',{maximumFractionDigits:2})+' ha':'—']]
+  },
+  {
     id:'urbano', group:'uso', name:'Área Urbana', geomType:'polygon',
     desc:'Zona urbana consolidada (Zona Residencial)',
     color:'#7a3b52', fillOpacity:0.6, weight:1.8, dashArray:null,
@@ -334,14 +342,6 @@ const LAYER_DEFS = [
     color:'#8a6d1f', fillOpacity:0.5, weight:1.8, dashArray:null,
     defaultOn:true, data:DATA_RURAL_FILL,
     popup:p=>[['Área',p.AREA_M2?Number(p.AREA_M2).toLocaleString('pt-BR',{maximumFractionDigits:0})+' m²':'—']]
-  },
-  {
-    id:'protecao_ambiental', group:'uso', name:'Área de Proteção Ambiental', geomType:'polygon',
-    desc:'Zona de proteção ambiental — sobreposta às demais zonas (uso restrito)',
-    color:'#2f6b46', fillOpacity:0.4, weight:1.8, dashArray:'2,3',
-    defaultOn:true, data:DATA_PROTECAO_AMBIENTAL,
-    source:'Anexo III – Divisão Territorial (Prefeitura de Jaguariúna), extraído e georreferenciado a partir do desenho oficial em AutoCAD',
-    popup:p=>[['Área',p.area_ha?Number(p.area_ha).toLocaleString('pt-BR',{maximumFractionDigits:2})+' ha':'—']]
   },
   {
     id:'app_env', group:'env', name:'Área de Preservação Permanente', geomType:'polygon',
@@ -525,6 +525,16 @@ LAYER_DEFS.forEach(def=>{
   if(def.defaultOn) layer.addTo(map);
 });
 
+/* Área de Proteção Ambiental tem prioridade visual: deve permanecer
+   sempre acima das demais camadas de zoneamento, mesmo depois que o
+   usuário ligar/desligar outras camadas (o que normalmente reordenaria
+   o empilhamento no mapa). */
+function enforceEnvPriority(){
+  const envLayer = leafletLayers['protecao_ambiental'];
+  if(envLayer && map.hasLayer(envLayer)) envLayer.bringToFront();
+}
+enforceEnvPriority();
+
 /* Reforço de contraste no modo escuro: os tiles do mapa ficam escurecidos
    (filtro CSS), mas o preenchimento das camadas não — sem isso, elas
    perdem contraste contra o fundo escuro. */
@@ -610,6 +620,7 @@ function renderPanel(){
     checkbox.addEventListener('change', ()=>{
       if(checkbox.checked){ leafletLayers[def.id].addTo(map); row.classList.add('active'); }
       else{ map.removeLayer(leafletLayers[def.id]); row.classList.remove('active'); }
+      enforceEnvPriority();
     });
   });
 }
