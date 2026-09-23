@@ -2,7 +2,7 @@
 
 Geoportal interativo para consulta do mapeamento de uso e ocupação do solo do município de Jaguariúna/SP.
 
-🔗 **Acesse ao vivo:** https://mirianniz-debug.github.io/Uso-do-solo-em-Jaguaiuna/
+🔗 **Acesse ao vivo:** https://mirianniz-debug.github.io/Uso-do-solo-em-Jaguariuna/
 
 ## Sobre
 
