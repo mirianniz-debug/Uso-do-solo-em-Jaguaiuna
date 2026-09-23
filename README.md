@@ -4,6 +4,8 @@ Geoportal interativo para consulta do mapeamento de uso e ocupação do solo do 
 
 🔗 **Acesse ao vivo:** https://mirianniz-debug.github.io/Uso-do-solo-em-Jaguariuna/
 
+👤 **Parte do portfólio de:** https://mirianniz-debug.github.io/Portfolio/
+
 ## Sobre
 
 Mapa web com as classes de uso do solo do município, permitindo consulta espacial das categorias mapeadas (urbano, agrícola, vegetação nativa, corpos d'água, entre outras).
